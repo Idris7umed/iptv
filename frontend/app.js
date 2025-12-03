@@ -40,7 +40,6 @@ class IPTVBrowser {
             muteBtn: document.getElementById('muteBtn'),
             volumeSlider: document.getElementById('volumeSlider'),
             fullscreenBtn: document.getElementById('fullscreenBtn'),
-            streamLink: document.getElementById('streamLink'),
             channelQuality: document.getElementById('channelQuality'),
             channelCountry: document.getElementById('channelCountry'),
             saveChannelBtn: document.getElementById('saveChannelBtn'),
@@ -187,34 +186,34 @@ class IPTVBrowser {
     }
     
     async loadFromM3UFiles() {
-        // Complete list of all country m3u files to load
-        const countries = [
-            'ad', 'ae', 'af', 'ag', 'al', 'am', 'ao', 'ar', 'at', 'au', 'aw', 'az',
-            'ba', 'bb', 'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'bm', 'bn', 'bo', 'bq', 'br', 'bs', 'bw', 'by', 'bz',
-            'ca', 'cd', 'cf', 'cg', 'ch', 'ci', 'cl', 'cm', 'cn', 'co', 'cr', 'cu', 'cv', 'cw', 'cy', 'cz',
-            'de', 'dj', 'dk', 'dm', 'do', 'dz',
-            'ec', 'ee', 'eg', 'eh', 'er', 'es', 'et',
-            'fi', 'fj', 'fm', 'fo', 'fr',
+        // Complete list of ALL m3u files to load (includes extended files like us_pluto, uk_samsung, etc.)
+        const m3uFiles = [
+            'ad', 'ae', 'af', 'ag', 'al', 'am', 'ao', 'ar', 'at', 'at_plutotv', 'at_samsung', 'au', 'au_samsung', 'aw', 'az',
+            'ba', 'ba_morescreens', 'bb', 'bd', 'be', 'be_samsung', 'bf', 'bg', 'bh', 'bi', 'bj', 'bm', 'bn', 'bo', 'bq', 'br', 'br_pluto', 'br_samsung', 'bs', 'bw', 'by', 'bz', 'bz_nexgen',
+            'ca', 'ca_pluto', 'ca_samsung', 'ca_stingray', 'cd', 'cf', 'cg', 'ch', 'ch_pluto', 'ch_samsung', 'ci', 'cl', 'cm', 'cn', 'cn_112114', 'cn_cctv', 'cn_cgtn', 'cn_yeslivetv', 'co', 'cr', 'cu', 'cv', 'cw', 'cy', 'cz',
+            'de', 'de_pluto', 'de_rakuten', 'de_samsung', 'dj', 'dk', 'dk_samsung', 'dm', 'do', 'dz',
+            'ec', 'ee', 'eg', 'eh', 'er', 'es', 'es_pluto', 'es_rakuten', 'es_samsung', 'es_yowi', 'et',
+            'fi', 'fi_rakuten', 'fi_samsung', 'fj', 'fm', 'fo', 'fr', 'fr_bfm', 'fr_fashiontv', 'fr_groupecanalplus', 'fr_groupem6', 'fr_persiana', 'fr_pluto', 'fr_rakuten', 'fr_samsung',
             'ga', 'ge', 'gf', 'gh', 'gl', 'gm', 'gn', 'gp', 'gq', 'gr', 'gt', 'gu', 'gy',
             'hk', 'hn', 'hr', 'ht', 'hu',
-            'id', 'ie', 'il', 'in', 'iq', 'ir', 'is', 'it',
+            'id', 'ie', 'ie_samsung', 'il', 'in', 'in_samsung', 'iq', 'ir', 'ir_lenz', 'ir_telewebion', 'ir_wnslive', 'is', 'it', 'it_pluto', 'it_rakuten', 'it_samsung',
             'jm', 'jo', 'jp',
-            'ke', 'kg', 'kh', 'km', 'kn', 'kp', 'kr', 'kw', 'kz',
-            'la', 'lb', 'lc', 'li', 'lk', 'lr', 'lt', 'lu', 'lv', 'ly',
-            'ma', 'mc', 'md', 'me', 'mg', 'mk', 'ml', 'mm', 'mn', 'mo', 'mq', 'mr', 'mt', 'mu', 'mv', 'mw', 'mx', 'my', 'mz',
-            'na', 'ne', 'ng', 'ni', 'nl', 'no', 'np', 'nz',
+            'ke', 'kg', 'kh', 'kh_happywatch99', 'km', 'kn', 'kp', 'kr', 'kw', 'kz',
+            'la', 'lb', 'lc', 'li', 'lk', 'lr', 'lt', 'lu', 'lu_samsung', 'lv', 'ly',
+            'ma', 'mc', 'md', 'me', 'mg', 'mk', 'ml', 'mm', 'mn', 'mo', 'mq', 'mr', 'mt', 'mt_smashplus', 'mu', 'mv', 'mw', 'mx', 'mx_amagi', 'mx_multimedios', 'mx_pluto', 'mx_samsung', 'my', 'mz',
+            'na', 'ne', 'ng', 'ni', 'nl', 'nl_samsung', 'no', 'no_samsung', 'np', 'nz', 'nz_samsung',
             'om',
-            'pa', 'pe', 'pf', 'pg', 'ph', 'pk', 'pl', 'pr', 'ps', 'pt', 'py',
+            'pa', 'pe', 'pe_opencaster', 'pf', 'pg', 'ph', 'pk', 'pl', 'pl_mediateka', 'pl_rakuten', 'pr', 'ps', 'pt', 'pt_samsung', 'py',
             'qa',
-            'ro', 'rs', 'ru', 'rw',
-            'sa', 'sd', 'se', 'sg', 'si', 'sk', 'sl', 'sm', 'sn', 'so', 'sr', 'st', 'sv', 'sx', 'sy',
-            'td', 'tg', 'th', 'tj', 'tl', 'tm', 'tn', 'tr', 'tt', 'tw', 'tz',
-            'ua', 'ug', 'uk', 'us', 'uy', 'uz',
+            'ro', 'rs', 'ru', 'ru_bonustv', 'ru_catcast', 'ru_mylifeisgood', 'ru_ntv', 'ru_rt', 'ru_smotrim', 'ru_televizor24', 'ru_tvbricks', 'ru_tvteleport', 'ru_zabava', 'rw',
+            'sa', 'sd', 'se', 'se_samsung', 'sg', 'si', 'si_xploretv', 'sk', 'sl', 'sm', 'sn', 'so', 'so_premiumfree', 'sr', 'st', 'sv', 'sx', 'sy',
+            'td', 'tg', 'th', 'th_v2hcdn', 'tj', 'tl', 'tm', 'tn', 'tr', 'tr_gem', 'tr_onetv', 'tt', 'tw', 'tz',
+            'ua', 'ug', 'uk', 'uk_bbc', 'uk_pluto', 'uk_rakuten', 'uk_samsung', 'uk_sportstribal', 'us', 'us_30a', 'us_3abn', 'us_abcnews', 'us_amagi', 'us_canelatv', 'us_cbsn', 'us_cineversetv', 'us_distro', 'us_firetv', 'us_frequency', 'us_glewedtv', 'us_klowdtv', 'us_local', 'us_moveonjoy', 'us_pbs', 'us_plex', 'us_pluto', 'us_roku', 'us_samsung', 'us_sofast', 'us_ssh101', 'us_stirr', 'us_tcl', 'us_tubi', 'us_tvpass', 'us_vizio', 'us_wfmz', 'us_xumo', 'uy', 'uz',
             'va', 've', 'vg', 'vi', 'vn',
             'ws',
             'xk',
             'ye', 'yt',
-            'za', 'zm', 'zw'
+            'za', 'za_freevisiontv', 'zm', 'zw'
         ];
         const channels = [];
         
@@ -224,17 +223,19 @@ class IPTVBrowser {
         // Fetch channels in parallel batches to improve performance
         // Batch size of 20 balances parallel loading speed vs avoiding too many concurrent requests
         const batchSize = 20;
-        for (let i = 0; i < countries.length; i += batchSize) {
-            const batch = countries.slice(i, i + batchSize);
-            const promises = batch.map(async country => {
+        for (let i = 0; i < m3uFiles.length; i += batchSize) {
+            const batch = m3uFiles.slice(i, i + batchSize);
+            const promises = batch.map(async filename => {
                 try {
-                    const response = await fetch(`${baseUrl}/${country}.m3u`);
+                    const response = await fetch(`${baseUrl}/${filename}.m3u`);
                     if (response.ok) {
                         const content = await response.text();
-                        return this.parseM3U(content, country.toUpperCase());
+                        // Extract country code from filename (e.g., 'us_pluto' -> 'US', 'uk' -> 'UK')
+                        const countryCode = filename.split('_')[0].toUpperCase();
+                        return this.parseM3U(content, countryCode);
                     }
                 } catch (error) {
-                    console.log(`Could not load ${country}.m3u`);
+                    console.log(`Could not load ${filename}.m3u`);
                 }
                 return [];
             });
@@ -707,7 +708,6 @@ class IPTVBrowser {
         
         // Update modal info
         this.elements.playerTitle.textContent = channel.name;
-        this.elements.streamLink.href = channel.url;
         this.elements.channelQuality.textContent = channel.quality ? `Quality: ${channel.quality}` : '';
         this.elements.channelCountry.textContent = channel.country ? `Country: ${countryNames[channel.country] || channel.country}` : '';
         
