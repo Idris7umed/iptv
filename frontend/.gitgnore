@@ -1,0 +1,3 @@
+# Ignore generated channel data
+/frontend/channels.json
+channels.json
