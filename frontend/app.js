@@ -107,6 +107,7 @@ class IPTVBrowser {
         const baseUrl = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams';
         
         // Fetch channels in parallel batches to improve performance
+        // Batch size of 20 balances parallel loading speed vs avoiding too many concurrent requests
         const batchSize = 20;
         for (let i = 0; i < countries.length; i += batchSize) {
             const batch = countries.slice(i, i + batchSize);
