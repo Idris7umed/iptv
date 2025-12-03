@@ -1,4 +1,4 @@
-/* CSS Variables */
+/* CSS Variables - Dark Mode (default) */
 :root {
     --bg-primary: #0f0f0f;
     --bg-secondary: #1a1a1a;
@@ -15,6 +15,18 @@
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
+}
+
+/* Light Mode */
+[data-theme="light"] {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e8e8e8;
+    --bg-hover: #e0e0e0;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --border-color: #d0d0d0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Reset & Base */
@@ -67,9 +79,49 @@ body {
     font-weight: 600;
 }
 
-.header-stats {
+/* Header Actions */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-size: 0.9rem;
     color: var(--text-secondary);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.mobile-filter-btn {
+    display: none;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.mobile-filter-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 /* Main Content */
@@ -171,6 +223,32 @@ select {
 select:focus {
     outline: none;
     border-color: var(--accent-color);
+}
+
+/* Checkbox Container */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.checkbox-container:hover {
+    border-color: var(--accent-color);
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-color);
+    cursor: pointer;
 }
 
 /* Buttons */
@@ -331,6 +409,21 @@ select:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Saved Badge */
+.saved-badge {
+    display: inline-flex;
+    color: var(--accent-color);
+    flex-shrink: 0;
+}
+
+.channel-card.saved {
+    border-color: var(--accent-color);
+    background-color: rgba(99, 102, 241, 0.05);
 }
 
 .channel-meta {
@@ -531,6 +624,12 @@ select:focus {
     background-color: var(--accent-hover);
 }
 
+/* Save Button */
+.control-btn.saved,
+.control-btn.saved:hover {
+    color: var(--accent-color);
+}
+
 #volumeSlider {
     width: 100px;
     height: 4px;
@@ -570,8 +669,27 @@ select:focus {
 
 /* Responsive Design */
 @media (max-width: 900px) {
+    .mobile-filter-btn {
+        display: flex;
+    }
+    
     .sidebar {
         display: none;
+        position: fixed;
+        top: 73px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: calc(100vh - 73px);
+        z-index: 99;
+        border-right: none;
+        background-color: var(--bg-secondary);
+        overflow-y: auto;
+    }
+    
+    .sidebar.open {
+        display: block;
     }
     
     .main-content {
@@ -594,36 +712,81 @@ select:focus {
     
     .channel-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .channel-card {
+        padding: 16px;
+    }
+    
+    .modal {
+        padding: 0;
     }
     
     .modal-content {
         max-height: 100vh;
         border-radius: 0;
+        height: 100vh;
+    }
+    
+    .modal-header {
+        padding: 16px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1rem;
     }
     
     .player-controls {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .volume-control {
+        order: 1;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    #volumeSlider {
+        flex: 1;
+        max-width: 150px;
+    }
+    
+    .playback-controls {
+        order: 0;
+    }
+    
+    .extra-controls {
+        order: 2;
+    }
+    
+    .channel-info {
+        padding: 12px 16px;
         flex-wrap: wrap;
         gap: 12px;
     }
 }
 
-/* Mobile Filters Toggle */
-@media (max-width: 900px) {
-    .sidebar {
-        display: none;
-        position: fixed;
-        top: 73px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        height: calc(100vh - 73px);
-        z-index: 99;
-        border-right: none;
+/* Extra small devices */
+@media (max-width: 360px) {
+    .logo svg {
+        width: 24px;
+        height: 24px;
     }
     
-    .sidebar.open {
-        display: block;
+    .logo h1 {
+        font-size: 1rem;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    #channelCount {
+        font-size: 0.8rem;
     }
 }
 
