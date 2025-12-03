@@ -1,13 +1,18 @@
 // IPTV Browser Application
 const MAX_VISIBLE_CHANNELS = 100;
+const SAVED_CHANNELS_KEY = 'hala_iptv_saved_channels';
+const THEME_KEY = 'hala_iptv_theme';
 
 class IPTVBrowser {
     constructor() {
         this.channels = [];
         this.filteredChannels = [];
+        this.savedChannels = this.loadSavedChannels();
+        this.currentTheme = this.loadTheme();
         this.currentHls = null;
         this.isPlaying = false;
         this.currentStreamUrl = '';
+        this.currentChannel = null;
         
         // DOM Elements
         this.elements = {
@@ -17,6 +22,7 @@ class IPTVBrowser {
             clearSearch: document.getElementById('clearSearch'),
             countryFilter: document.getElementById('countryFilter'),
             qualityFilter: document.getElementById('qualityFilter'),
+            savedFilter: document.getElementById('savedFilter'),
             resetFilters: document.getElementById('resetFilters'),
             gridViewBtn: document.getElementById('gridViewBtn'),
             listViewBtn: document.getElementById('listViewBtn'),
@@ -36,13 +42,122 @@ class IPTVBrowser {
             fullscreenBtn: document.getElementById('fullscreenBtn'),
             streamLink: document.getElementById('streamLink'),
             channelQuality: document.getElementById('channelQuality'),
-            channelCountry: document.getElementById('channelCountry')
+            channelCountry: document.getElementById('channelCountry'),
+            saveChannelBtn: document.getElementById('saveChannelBtn'),
+            saveIcon: document.getElementById('saveIcon'),
+            savedIcon: document.getElementById('savedIcon'),
+            mobileFilterToggle: document.getElementById('mobileFilterToggle'),
+            sidebar: document.querySelector('.sidebar'),
+            themeToggle: document.getElementById('themeToggle'),
+            sunIcon: document.getElementById('sunIcon'),
+            moonIcon: document.getElementById('moonIcon')
         };
         
         this.init();
     }
     
+    // Load theme from localStorage
+    loadTheme() {
+        try {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                return savedTheme;
+            }
+            // Check system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                return 'light';
+            }
+            return 'dark';
+        } catch (e) {
+            return 'dark';
+        }
+    }
+    
+    // Save theme to localStorage
+    saveTheme(theme) {
+        try {
+            localStorage.setItem(THEME_KEY, theme);
+        } catch (e) {
+            console.error('Error saving theme:', e);
+        }
+    }
+    
+    // Toggle theme
+    toggleTheme() {
+        this.currentTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', this.currentTheme);
+        this.saveTheme(this.currentTheme);
+        this.updateThemeUI();
+    }
+    
+    // Update theme toggle button UI
+    updateThemeUI() {
+        if (this.currentTheme === 'light') {
+            this.elements.sunIcon.classList.add('hidden');
+            this.elements.moonIcon.classList.remove('hidden');
+        } else {
+            this.elements.sunIcon.classList.remove('hidden');
+            this.elements.moonIcon.classList.add('hidden');
+        }
+    }
+    
+    // Load saved channels from localStorage
+    loadSavedChannels() {
+        try {
+            const saved = localStorage.getItem(SAVED_CHANNELS_KEY);
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error('Error loading saved channels:', e);
+            return [];
+        }
+    }
+    
+    // Save channels to localStorage
+    saveSavedChannels() {
+        try {
+            localStorage.setItem(SAVED_CHANNELS_KEY, JSON.stringify(this.savedChannels));
+        } catch (e) {
+            console.error('Error saving channels:', e);
+        }
+    }
+    
+    // Check if a channel is saved
+    isChannelSaved(channelId) {
+        return this.savedChannels.includes(channelId);
+    }
+    
+    // Toggle save status of a channel
+    toggleSaveChannel(channelId) {
+        const index = this.savedChannels.indexOf(channelId);
+        if (index > -1) {
+            this.savedChannels.splice(index, 1);
+        } else {
+            this.savedChannels.push(channelId);
+        }
+        this.saveSavedChannels();
+        this.updateSaveButtonUI();
+        this.renderChannels();
+    }
+    
+    // Update save button UI based on current channel
+    updateSaveButtonUI() {
+        if (!this.currentChannel) return;
+        const isSaved = this.isChannelSaved(this.currentChannel.id);
+        if (isSaved) {
+            this.elements.saveIcon.classList.add('hidden');
+            this.elements.savedIcon.classList.remove('hidden');
+            this.elements.saveChannelBtn.classList.add('saved');
+        } else {
+            this.elements.saveIcon.classList.remove('hidden');
+            this.elements.savedIcon.classList.add('hidden');
+            this.elements.saveChannelBtn.classList.remove('saved');
+        }
+    }
+    
     async init() {
+        this.updateThemeUI();
         await this.loadChannels();
         this.setupEventListeners();
         this.renderChannels();
@@ -397,7 +512,14 @@ class IPTVBrowser {
         // Filters
         this.elements.countryFilter.addEventListener('change', () => this.filterChannels());
         this.elements.qualityFilter.addEventListener('change', () => this.filterChannels());
+        this.elements.savedFilter.addEventListener('change', () => this.filterChannels());
         this.elements.resetFilters.addEventListener('click', () => this.resetFilters());
+        
+        // Theme Toggle
+        this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+        
+        // Mobile Filter Toggle
+        this.elements.mobileFilterToggle.addEventListener('click', () => this.toggleMobileFilters());
         
         // View Toggle
         this.elements.gridViewBtn.addEventListener('click', () => this.setView('grid'));
@@ -415,6 +537,11 @@ class IPTVBrowser {
         this.elements.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
         this.elements.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
         this.elements.retryBtn.addEventListener('click', () => this.retryStream());
+        this.elements.saveChannelBtn.addEventListener('click', () => {
+            if (this.currentChannel) {
+                this.toggleSaveChannel(this.currentChannel.id);
+            }
+        });
         
         // Video Events
         this.elements.videoPlayer.addEventListener('play', () => this.updatePlayPauseUI(true));
@@ -447,6 +574,7 @@ class IPTVBrowser {
         const search = this.elements.searchInput.value.toLowerCase();
         const country = this.elements.countryFilter.value;
         const quality = this.elements.qualityFilter.value;
+        const savedOnly = this.elements.savedFilter.checked;
         
         this.filteredChannels = this.channels.filter(channel => {
             const matchesSearch = !search || 
@@ -454,8 +582,9 @@ class IPTVBrowser {
                 (channel.id && channel.id.toLowerCase().includes(search));
             const matchesCountry = !country || channel.country === country;
             const matchesQuality = !quality || channel.quality === quality;
+            const matchesSaved = !savedOnly || this.isChannelSaved(channel.id);
             
-            return matchesSearch && matchesCountry && matchesQuality;
+            return matchesSearch && matchesCountry && matchesQuality && matchesSaved;
         });
         
         this.updateChannelCount();
@@ -466,9 +595,15 @@ class IPTVBrowser {
         this.elements.searchInput.value = '';
         this.elements.countryFilter.value = '';
         this.elements.qualityFilter.value = '';
+        this.elements.savedFilter.checked = false;
         this.filteredChannels = [...this.channels];
         this.updateChannelCount();
         this.renderChannels();
+    }
+    
+    // Toggle mobile filters sidebar
+    toggleMobileFilters() {
+        this.elements.sidebar.classList.toggle('open');
     }
     
     setView(view) {
@@ -503,7 +638,8 @@ class IPTVBrowser {
         
         this.filteredChannels.slice(0, MAX_VISIBLE_CHANNELS).forEach(channel => {
             const card = document.createElement('div');
-            card.className = 'channel-card';
+            const isSaved = this.isChannelSaved(channel.id);
+            card.className = 'channel-card' + (isSaved ? ' saved' : '');
             card.onclick = () => this.playChannel(channel);
             
             const escapedFirstChar = this.escapeHtml(channel.name.charAt(0));
@@ -519,11 +655,15 @@ class IPTVBrowser {
                 ? `<span class="channel-tag country">${this.escapeHtml(countryNames[channel.country] || channel.country)}</span>` 
                 : '';
             
+            const savedBadgeHtml = isSaved 
+                ? `<span class="saved-badge" title="Saved"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>` 
+                : '';
+            
             card.innerHTML = `
                 <div class="channel-header">
                     <div class="channel-logo">${logoHtml}</div>
                     <div class="channel-info-card">
-                        <div class="channel-name">${this.escapeHtml(channel.name)}</div>
+                        <div class="channel-name">${savedBadgeHtml}${this.escapeHtml(channel.name)}</div>
                         <div class="channel-meta">
                             ${qualityHtml}
                             ${countryHtml}
@@ -562,6 +702,7 @@ class IPTVBrowser {
     
     playChannel(channel) {
         this.currentStreamUrl = channel.url;
+        this.currentChannel = channel;
         const countryNames = this.getCountryNames();
         
         // Update modal info
@@ -570,10 +711,16 @@ class IPTVBrowser {
         this.elements.channelQuality.textContent = channel.quality ? `Quality: ${channel.quality}` : '';
         this.elements.channelCountry.textContent = channel.country ? `Country: ${countryNames[channel.country] || channel.country}` : '';
         
+        // Update save button UI
+        this.updateSaveButtonUI();
+        
         // Show modal
         this.elements.playerModal.classList.remove('hidden');
         this.elements.playerError.classList.add('hidden');
         document.body.style.overflow = 'hidden';
+        
+        // Close mobile sidebar if open
+        this.elements.sidebar.classList.remove('open');
         
         // Initialize player
         this.initPlayer(channel.url);
