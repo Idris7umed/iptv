@@ -76,9 +76,12 @@ class IPTVBrowser {
         const countries = ['us', 'uk', 'de', 'fr', 'es', 'it', 'br', 'in', 'ca', 'au', 'mx', 'jp', 'kr', 'ru', 'tr'];
         const channels = [];
         
+        // Use GitHub raw content URLs to fetch m3u files
+        const baseUrl = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams';
+        
         for (const country of countries) {
             try {
-                const response = await fetch(`../streams/${country}.m3u`);
+                const response = await fetch(`${baseUrl}/${country}.m3u`);
                 if (response.ok) {
                     const content = await response.text();
                     const parsed = this.parseM3U(content, country.toUpperCase());
