@@ -17,6 +17,8 @@
     "playlist:deploy": "npx gh-pages-clean && npx gh-pages -m \"Deploy to GitHub Pages\" -d .gh-pages -r https://$GITHUB_TOKEN@github.com/iptv-org/iptv.git",
     "readme:update": "tsx scripts/commands/readme/update.ts",
     "report:create": "tsx scripts/commands/report/create.ts",
+    "frontend:generate": "node scripts/commands/frontend/generate.js",
+    "frontend:serve": "npx http-server frontend -p 3000 -c-1",
     "check": "npm run playlist:lint && npm run playlist:validate",
     "format": "npm run playlist:format",
     "update": "npm run playlist:generate && npm run api:generate && npm run readme:update",
