@@ -508,10 +508,10 @@ class IPTVBrowser {
         return {
             'Sports': ['sport', 'espn', 'fox sports', 'bein', 'sky sports', 'eurosport', 'nba', 'nfl', 'mlb', 'nhl', 'football', 'soccer', 'tennis', 'golf', 'cricket', 'rugby', 'wrestling', 'wwe', 'ufc', 'boxing', 'motorsport', 'racing', 'f1', 'formula', 'olympic', 'athletic', 'stadium', 'match', 'game'],
             'Movies': ['movie', 'cinema', 'film', 'hbo', 'showtime', 'cinemax', 'starz', 'hallmark', 'lifetime', 'amc', 'tcm', 'mgm', 'paramount', 'universal', 'sony', 'lionsgate', 'filmbox', 'cinemoi'],
-            'News': ['news', 'cnn', 'bbc', 'fox news', 'msnbc', 'abc news', 'cbs news', 'nbc news', 'al jazeera', 'reuters', 'euronews', 'sky news', 'france 24', 'rt ', 'dw ', 'nhk world', 'press', 'headline', 'breaking', 'journal'],
-            'Entertainment': ['entertainment', 'e!', 'bravo', 'tlc', 'mtv', 'vh1', 'comedy', 'funny', 'laugh', 'variety', 'talent', 'reality', 'drama', 'series', 'show'],
-            'Music': ['music', 'mtv', 'vh1', 'vevo', 'radio', 'fm ', 'hip hop', 'rock', 'jazz', 'classical', 'country', 'latin', 'pop', 'concert', 'song', 'melody', 'track'],
-            'Kids': ['kid', 'child', 'cartoon', 'disney', 'nickelodeon', 'nick', 'pbs kids', 'boomerang', 'baby', 'junior', 'toon', 'anime', 'animation', 'sesame', 'spongebob'],
+            'News': ['news', 'cnn', 'bbc news', 'fox news', 'msnbc', 'abc news', 'cbs news', 'nbc news', 'al jazeera', 'reuters', 'euronews', 'sky news', 'france 24', 'rt news', 'dw news', 'nhk world', 'press tv', 'headline', 'breaking'],
+            'Entertainment': ['entertainment', 'bravo', 'tlc', 'comedy', 'funny', 'laugh', 'variety', 'talent', 'reality', 'drama', 'teleseries'],
+            'Music': ['music', 'mtv', 'vh1', 'vevo', 'radio', 'hip hop', 'rock', 'jazz', 'classical', 'latin music', 'concert', 'song', 'melody'],
+            'Kids': ['kid', 'child', 'cartoon', 'disney', 'nickelodeon', 'nick jr', 'pbs kids', 'boomerang', 'baby', 'junior', 'toon', 'anime', 'animation', 'sesame', 'spongebob'],
             'Documentary': ['documentary', 'discovery', 'national geographic', 'nat geo', 'history', 'animal planet', 'nature', 'science', 'learning', 'educational', 'explore', 'planet earth', 'wild', 'smithsonian'],
             'Religious': ['religious', 'christian', 'church', 'gospel', 'faith', 'prayer', 'god', 'jesus', 'bible', 'catholic', 'islamic', 'muslim', 'quran', 'hindu', 'buddhist', 'spiritual', 'worship', 'ministry', 'ewtn', 'tbn', 'daystar'],
             'Lifestyle': ['lifestyle', 'food', 'cooking', 'travel', 'fashion', 'beauty', 'home', 'garden', 'health', 'fitness', 'wellness', 'shopping', 'diy', 'hgtv', 'style']
