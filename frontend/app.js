@@ -21,6 +21,7 @@ class IPTVBrowser {
             searchInput: document.getElementById('searchInput'),
             clearSearch: document.getElementById('clearSearch'),
             countryFilter: document.getElementById('countryFilter'),
+            categoryFilter: document.getElementById('categoryFilter'),
             qualityFilter: document.getElementById('qualityFilter'),
             savedFilter: document.getElementById('savedFilter'),
             resetFilters: document.getElementById('resetFilters'),
@@ -172,15 +173,15 @@ class IPTVBrowser {
                 // Fallback: parse m3u files directly
                 await this.loadFromM3UFiles();
             }
-            
-            this.filteredChannels = [...this.channels];
-            this.populateCountryFilter();
-            this.updateChannelCount();
         } catch (error) {
             console.error('Error loading channels:', error);
             // Try loading from M3U files as fallback
             await this.loadFromM3UFiles();
         } finally {
+            this.filteredChannels = [...this.channels];
+            this.populateCountryFilter();
+            this.populateCategoryFilter();
+            this.updateChannelCount();
             this.elements.loading.classList.add('hidden');
         }
     }
@@ -502,6 +503,48 @@ class IPTVBrowser {
         };
     }
     
+    // Category keywords for auto-categorization based on channel name
+    getCategoryKeywords() {
+        return {
+            'Sports': ['sport', 'espn', 'fox sports', 'bein', 'sky sports', 'eurosport', 'nba', 'nfl', 'mlb', 'nhl', 'football', 'soccer', 'tennis', 'golf', 'cricket', 'rugby', 'wrestling', 'wwe', 'ufc', 'boxing', 'motorsport', 'racing', 'f1', 'formula', 'olympic', 'athletic', 'stadium', 'match', 'game'],
+            'Movies': ['movie', 'cinema', 'film', 'hbo', 'showtime', 'cinemax', 'starz', 'hallmark', 'lifetime', 'amc', 'tcm', 'mgm', 'paramount', 'universal', 'sony', 'lionsgate', 'filmbox', 'cinemoi'],
+            'News': ['news', 'cnn', 'bbc news', 'fox news', 'msnbc', 'abc news', 'cbs news', 'nbc news', 'al jazeera', 'reuters', 'euronews', 'sky news', 'france 24', 'rt news', 'dw news', 'nhk world', 'press tv', 'headline', 'breaking'],
+            'Entertainment': ['entertainment', 'bravo', 'tlc', 'comedy', 'funny', 'laugh', 'variety', 'talent', 'reality', 'drama', 'teleseries'],
+            'Music': ['music', 'mtv', 'vh1', 'vevo', 'radio', 'hip hop', 'rock', 'jazz', 'classical', 'latin music', 'concert', 'song', 'melody'],
+            'Kids': ['kid', 'child', 'cartoon', 'disney', 'nickelodeon', 'nick jr', 'pbs kids', 'boomerang', 'baby', 'junior', 'toon', 'anime', 'animation', 'sesame', 'spongebob'],
+            'Documentary': ['documentary', 'discovery', 'national geographic', 'nat geo', 'history', 'animal planet', 'nature', 'science', 'learning', 'educational', 'explore', 'planet earth', 'wild', 'smithsonian'],
+            'Religious': ['religious', 'christian', 'church', 'gospel', 'faith', 'prayer', 'god', 'jesus', 'bible', 'catholic', 'islamic', 'muslim', 'quran', 'hindu', 'buddhist', 'spiritual', 'worship', 'ministry', 'ewtn', 'tbn', 'daystar'],
+            'Lifestyle': ['lifestyle', 'food', 'cooking', 'travel', 'fashion', 'beauty', 'home', 'garden', 'health', 'fitness', 'wellness', 'shopping', 'diy', 'hgtv', 'style']
+        };
+    }
+    
+    // Detect category based on channel name
+    detectCategory(channelName) {
+        const name = channelName.toLowerCase();
+        const keywords = this.getCategoryKeywords();
+        
+        for (const [category, terms] of Object.entries(keywords)) {
+            for (const term of terms) {
+                if (name.includes(term.toLowerCase())) {
+                    return category;
+                }
+            }
+        }
+        return 'General';
+    }
+    
+    // Populate category filter dropdown
+    populateCategoryFilter() {
+        const categories = ['Sports', 'Movies', 'News', 'Entertainment', 'Music', 'Kids', 'Documentary', 'Religious', 'Lifestyle', 'General'];
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            this.elements.categoryFilter.appendChild(option);
+        });
+    }
+    
     setupEventListeners() {
         // Search
         this.elements.searchInput.addEventListener('input', () => this.filterChannels());
@@ -512,6 +555,7 @@ class IPTVBrowser {
         
         // Filters
         this.elements.countryFilter.addEventListener('change', () => this.filterChannels());
+        this.elements.categoryFilter.addEventListener('change', () => this.filterChannels());
         this.elements.qualityFilter.addEventListener('change', () => this.filterChannels());
         this.elements.savedFilter.addEventListener('change', () => this.filterChannels());
         this.elements.resetFilters.addEventListener('click', () => this.resetFilters());
@@ -574,6 +618,7 @@ class IPTVBrowser {
     filterChannels() {
         const search = this.elements.searchInput.value.toLowerCase();
         const country = this.elements.countryFilter.value;
+        const category = this.elements.categoryFilter.value;
         const quality = this.elements.qualityFilter.value;
         const savedOnly = this.elements.savedFilter.checked;
         
@@ -582,10 +627,11 @@ class IPTVBrowser {
                 channel.name.toLowerCase().includes(search) ||
                 (channel.id && channel.id.toLowerCase().includes(search));
             const matchesCountry = !country || channel.country === country;
+            const matchesCategory = !category || this.detectCategory(channel.name) === category;
             const matchesQuality = !quality || channel.quality === quality;
             const matchesSaved = !savedOnly || this.isChannelSaved(channel.id);
             
-            return matchesSearch && matchesCountry && matchesQuality && matchesSaved;
+            return matchesSearch && matchesCountry && matchesCategory && matchesQuality && matchesSaved;
         });
         
         this.updateChannelCount();
@@ -595,6 +641,7 @@ class IPTVBrowser {
     resetFilters() {
         this.elements.searchInput.value = '';
         this.elements.countryFilter.value = '';
+        this.elements.categoryFilter.value = '';
         this.elements.qualityFilter.value = '';
         this.elements.savedFilter.checked = false;
         this.filteredChannels = [...this.channels];
@@ -656,6 +703,9 @@ class IPTVBrowser {
                 ? `<span class="channel-tag country">${this.escapeHtml(countryNames[channel.country] || channel.country)}</span>` 
                 : '';
             
+            const category = this.detectCategory(channel.name);
+            const categoryHtml = `<span class="channel-tag category">${this.escapeHtml(category)}</span>`;
+            
             const savedBadgeHtml = isSaved 
                 ? `<span class="saved-badge" title="Saved"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></span>` 
                 : '';
@@ -668,6 +718,7 @@ class IPTVBrowser {
                         <div class="channel-meta">
                             ${qualityHtml}
                             ${countryHtml}
+                            ${categoryHtml}
                         </div>
                     </div>
                 </div>
