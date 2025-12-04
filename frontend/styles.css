@@ -450,6 +450,11 @@ select:focus {
     color: var(--success-color);
 }
 
+.channel-tag.category {
+    background-color: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+}
+
 .play-indicator {
     display: flex;
     align-items: center;
